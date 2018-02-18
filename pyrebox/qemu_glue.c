@@ -2,13 +2,13 @@
 
    Copyright (C) 2017 Cisco Talos Security Intelligence and Research Group
 
-   PyREBox: Python scriptable Reverse Engineering Sandbox 
-   Author: Xabier Ugarte-Pedrero 
-   
+   PyREBox: Python scriptable Reverse Engineering Sandbox
+   Author: Xabier Ugarte-Pedrero
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License version 2 as
    published by the Free Software Foundation.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -18,7 +18,7 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
    MA 02110-1301, USA.
-   
+
 -------------------------------------------------------------------------------*/
 
 #include <Python.h>
@@ -65,7 +65,7 @@ const char* target_platform = "i386-softmmu";
 #endif
 
 #if defined(TARGET_I386) && !defined(TARGET_X86_64)
-register_type_t register_type[RN_LAST] = 
+register_type_t register_type[RN_LAST] =
 {
     RT_REGULAR,   //RN_EAX = 0,
     RT_REGULAR,   //RN_ECX,
@@ -78,11 +78,11 @@ register_type_t register_type[RN_LAST] =
     RT_REGULAR,   //RN_EIP,
     RT_REGULAR,   //RN_EFLAGS,
     RT_SEGMENT,   //RN_ES,
-    RT_SEGMENT,   //RN_CS, 
-    RT_SEGMENT,   //RN_SS,    
-    RT_SEGMENT,   //RN_DS,    
-    RT_SEGMENT,   //RN_FS,    
-    RT_SEGMENT,   //RN_GS,    
+    RT_SEGMENT,   //RN_CS,
+    RT_SEGMENT,   //RN_SS,
+    RT_SEGMENT,   //RN_DS,
+    RT_SEGMENT,   //RN_FS,
+    RT_SEGMENT,   //RN_GS,
     RT_SEGMENT,   //RN_LDT,
     RT_SEGMENT,   //RN_TR,
     RT_SEGMENT,   //RN_LDT,
@@ -95,7 +95,7 @@ register_type_t register_type[RN_LAST] =
     RT_REGULAR    //RN_CPU_INDEX.
 };
 #elif defined(TARGET_X86_64)
-register_type_t register_type[RN_LAST] = 
+register_type_t register_type[RN_LAST] =
 {
     RT_REGULAR,   //RN_EAX = 0,
     RT_REGULAR,   //RN_ECX,
@@ -108,11 +108,11 @@ register_type_t register_type[RN_LAST] =
     RT_REGULAR,   //RN_EIP,
     RT_REGULAR,   //RN_EFLAGS,
     RT_SEGMENT,   //RN_ES,
-    RT_SEGMENT,   //RN_CS, 
-    RT_SEGMENT,   //RN_SS,    
-    RT_SEGMENT,   //RN_DS,    
-    RT_SEGMENT,   //RN_FS,    
-    RT_SEGMENT,   //RN_GS,    
+    RT_SEGMENT,   //RN_CS,
+    RT_SEGMENT,   //RN_SS,
+    RT_SEGMENT,   //RN_DS,
+    RT_SEGMENT,   //RN_FS,
+    RT_SEGMENT,   //RN_GS,
     RT_SEGMENT,   //RN_LDT,
     RT_SEGMENT,   //RN_TR,
     RT_SEGMENT,   //RN_LDT,
@@ -142,7 +142,7 @@ register_type_t register_type[RN_LAST] =
 /**************************************************** PYTHON FUNCTIONS ************************************************/
 
 PyObject* get_cpu_state(qemu_cpu_opaque_t cpu_opaque){
-    //N denotes object type. It passes an object untouched, and it doesnt increment its reference count like O, 
+    //N denotes object type. It passes an object untouched, and it doesnt increment its reference count like O,
     //so that the call to XDECREF of the whole tuple will already trigger the deallocation of all the values.
     PyObject* result = 0;
 #if defined(TARGET_I386) && !defined(TARGET_X86_64)
@@ -156,7 +156,7 @@ PyObject* get_cpu_state(qemu_cpu_opaque_t cpu_opaque){
                             env->regs[R_EBP],
                             env->regs[R_ESI],
                             env->regs[R_EDI],
-                            env->eip, 
+                            env->eip,
                             env->eflags,
                             Py_BuildValue("(I,I,I,I)", env->segs[R_ES].selector,env->segs[R_ES].base,env->segs[R_ES].limit,env->segs[R_ES].flags),
                             Py_BuildValue("(I,I,I,I)", env->segs[R_CS].selector,env->segs[R_CS].base,env->segs[R_CS].limit,env->segs[R_CS].flags),
@@ -198,7 +198,7 @@ PyObject* get_cpu_state(qemu_cpu_opaque_t cpu_opaque){
                             env->regs[R_EBP],
                             env->regs[R_ESI],
                             env->regs[R_EDI],
-                            env->eip, 
+                            env->eip,
                             env->eflags,
                             Py_BuildValue("(I,K,I,I)", env->segs[R_ES].selector,env->segs[R_ES].base,env->segs[R_ES].limit,env->segs[R_ES].flags),
                             Py_BuildValue("(I,K,I,I)", env->segs[R_CS].selector,env->segs[R_CS].base,env->segs[R_CS].limit,env->segs[R_CS].flags),
@@ -283,7 +283,7 @@ int qemu_virtual_memory_rw_with_pgd(pyrebox_target_ulong pgd, pyrebox_target_ulo
     if (running_cpu != NULL){
         result = qemu_virtual_memory_rw(running_cpu,addr,buf,len,is_write);
     }
-    else{//If it didnt work, we force the pgd 
+    else{//If it didnt work, we force the pgd
         CPUState* cpu = first_cpu;
         assert(first_cpu != NULL);
 #if defined(TARGET_I386) || defined(TARGET_X86_64)
@@ -311,7 +311,7 @@ pyrebox_target_ulong qemu_virtual_to_physical_with_pgd(pyrebox_target_ulong pgd,
         if (phys_addr == -1)
           return -1;
         phys_addr += (addr & ~TARGET_PAGE_MASK);
-        return (pyrebox_target_ulong)phys_addr; 
+        return (pyrebox_target_ulong)phys_addr;
     }
     else{//If it didnt work, we force the cr[3]
         CPUState* cpu = first_cpu;
@@ -332,7 +332,7 @@ pyrebox_target_ulong qemu_virtual_to_physical_with_pgd(pyrebox_target_ulong pgd,
         if (phys_addr == -1)
           return -1;
         phys_addr += (addr & ~TARGET_PAGE_MASK);
-        return (pyrebox_target_ulong)phys_addr; 
+        return (pyrebox_target_ulong)phys_addr;
     }
 }
 
@@ -342,7 +342,7 @@ uint32_t qemu_ioport_read(uint16_t address, uint8_t size){
         size = 1;
     }
     uint32_t val = 0;
-    
+
     switch(size) {
     default:
     case 1:
@@ -659,31 +659,31 @@ int write_selector_register_convert(qemu_cpu_opaque_t cpu_opaque, register_num_t
             env->segs[R_ES].limit = limit;
             env->segs[R_ES].flags = base;
             break;
-         case RN_CS: 
+         case RN_CS:
             env->segs[R_CS].selector = selector;
             env->segs[R_CS].base = base;
             env->segs[R_CS].limit = limit;
             env->segs[R_CS].flags = base;
             break;
-         case RN_SS:    
+         case RN_SS:
             env->segs[R_SS].selector = selector;
             env->segs[R_SS].base = base;
             env->segs[R_SS].limit = limit;
             env->segs[R_SS].flags = base;
             break;
-         case RN_DS:    
+         case RN_DS:
             env->segs[R_DS].selector = selector;
             env->segs[R_DS].base = base;
             env->segs[R_DS].limit = limit;
             env->segs[R_DS].flags = base;
             break;
-         case RN_FS:    
+         case RN_FS:
             env->segs[R_FS].selector = selector;
             env->segs[R_FS].base = base;
             env->segs[R_FS].limit = limit;
             env->segs[R_FS].flags = base;
             break;
-         case RN_GS:    
+         case RN_GS:
             env->segs[R_GS].selector = selector;
             env->segs[R_GS].base = base;
             env->segs[R_GS].limit = limit;
@@ -819,7 +819,7 @@ qemu_cpu_opaque_t get_qemu_cpu_with_pgd(pyrebox_target_ulong pgd){
 #elif defined(TARGET_ARM) && !defined(TARGET_AARCH64)
 #error "Architecture not supported yet"
 #endif
-        {   
+        {
             return (qemu_cpu_opaque_t) next_cpu;
         }
         next_cpu = CPU_NEXT(next_cpu);

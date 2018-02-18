@@ -114,7 +114,7 @@ typedef struct DisasContext {
     //because when the insn_end / block_end is triggered,
     //the enviroment CPU is already pointing to the next block
     target_ulong saved_pc;
-    //Pyrebox: Save the opcode while doing the dissasembly, in 
+    //Pyrebox: Save the opcode while doing the dissasembly, in
     //order to call the corresponding opcode range callback.
     uint32_t saved_opcode;
     //Pyrebox: the cpu
@@ -1602,14 +1602,14 @@ static void gen_rot_rm_T1(DisasContext *s, TCGMemOp ot, int op1, int is_right)
     t0 = tcg_const_i32(0);
     t1 = tcg_temp_new_i32();
     tcg_gen_trunc_tl_i32(t1, cpu_T1);
-    tcg_gen_movi_i32(cpu_tmp2_i32, CC_OP_ADCOX); 
+    tcg_gen_movi_i32(cpu_tmp2_i32, CC_OP_ADCOX);
     tcg_gen_movi_i32(cpu_tmp3_i32, CC_OP_EFLAGS);
     tcg_gen_movcond_i32(TCG_COND_NE, cpu_cc_op, t1, t0,
                         cpu_tmp2_i32, cpu_tmp3_i32);
     tcg_temp_free_i32(t0);
     tcg_temp_free_i32(t1);
 
-    /* The CC_OP value is no longer predictable.  */ 
+    /* The CC_OP value is no longer predictable.  */
     set_cc_op(s, CC_OP_DYNAMIC);
 }
 
@@ -1702,7 +1702,7 @@ static void gen_rotc_rm_T1(DisasContext *s, TCGMemOp ot, int op1,
         gen_op_ld_v(s, ot, cpu_T0, cpu_A0);
     else
         gen_op_mov_v_reg(ot, cpu_T0, op1);
-    
+
     if (is_right) {
         switch (ot) {
         case MO_8:
@@ -2173,9 +2173,9 @@ static inline void gen_goto_tb(DisasContext *s, int tb_num, target_ulong eip)
         tcg_gen_goto_tb(tb_num);
         gen_jmp_im(eip);
 
-        //Pyrebox: insn end 
+        //Pyrebox: insn end
         //helper_qemu_insn_end_callback(CPUState* cpu)
-        //At this point, we take the pgd from the DisasContext, 
+        //At this point, we take the pgd from the DisasContext,
         //because we previously saved it
         if (is_insn_end_callback_needed(s->pgd)){
             TCGv_ptr tcg_cpu = tcg_const_ptr((tcg_target_ulong)s->cs);
@@ -2199,7 +2199,7 @@ static inline void gen_goto_tb(DisasContext *s, int tb_num, target_ulong eip)
         }
         //Pyrebox: opcode range
         //helper_qemu_opcode_range_callback(CPUState* cpu, target_ulong from, target_ulong to, uint16_t opcode)
-        
+
         if (is_opcode_range_callback_needed((target_ulong)s->saved_opcode,s->pgd)){
             //CPU points to the next instruction
             TCGv tcg_saved_pc = tcg_temp_new();
@@ -2499,7 +2499,7 @@ static void gen_illegal_opcode(DisasContext *s)
         tcg_gen_movi_tl(tcg_saved_pc, s->saved_pc);
         TCGv tcg_next_pc = tcg_const_tl(0);
         TCGv_i32 tcg_opcode = tcg_const_i32(s->saved_opcode);
-    
+
         TCGv_ptr tcg_cpu = tcg_const_ptr((tcg_target_ulong)s->cs);
         gen_helper_qemu_opcode_range_callback(tcg_cpu,
         tcg_saved_pc, tcg_next_pc, tcg_opcode);
@@ -2635,9 +2635,9 @@ do_gen_eob_worker(DisasContext *s, bool inhibit, bool recheck_tf, TCGv jr)
         tcg_temp_free(vaddr);
     } else {
 
-        //Pyrebox: insn end 
+        //Pyrebox: insn end
         //helper_qemu_insn_end_callback(CPUState* cpu)
-        //At this point, we take the pgd from the DisasContext, 
+        //At this point, we take the pgd from the DisasContext,
         //because we previously saved it
         if (is_insn_end_callback_needed(s->pgd)){
             TCGv_ptr tcg_cpu = tcg_const_ptr((tcg_target_ulong)s->cs);
@@ -2661,7 +2661,7 @@ do_gen_eob_worker(DisasContext *s, bool inhibit, bool recheck_tf, TCGv jr)
         }
         //Pyrebox: opcode range
         //helper_qemu_opcode_range_callback(CPUState* cpu, target_ulong from, target_ulong to, uint16_t opcode)
-        
+
         if (is_opcode_range_callback_needed((target_ulong)s->saved_opcode,s->pgd)){
             //CPU points to next instruction
             TCGv tcg_saved_pc = tcg_temp_new();
@@ -3240,7 +3240,7 @@ static void gen_sse(CPUX86State *env, DisasContext *s, int b,
 #endif
             {
                 gen_ldst_modrm(env, s, modrm, MO_32, OR_TMP0, 0);
-                tcg_gen_addi_ptr(cpu_ptr0, cpu_env, 
+                tcg_gen_addi_ptr(cpu_ptr0, cpu_env,
                                  offsetof(CPUX86State,fpregs[reg].mmx));
                 tcg_gen_trunc_tl_i32(cpu_tmp2_i32, cpu_T0);
                 gen_helper_movl_mm_T0_mmx(cpu_ptr0, cpu_tmp2_i32);
@@ -3250,14 +3250,14 @@ static void gen_sse(CPUX86State *env, DisasContext *s, int b,
 #ifdef TARGET_X86_64
             if (s->dflag == MO_64) {
                 gen_ldst_modrm(env, s, modrm, MO_64, OR_TMP0, 0);
-                tcg_gen_addi_ptr(cpu_ptr0, cpu_env, 
+                tcg_gen_addi_ptr(cpu_ptr0, cpu_env,
                                  offsetof(CPUX86State,xmm_regs[reg]));
                 gen_helper_movq_mm_T0_xmm(cpu_ptr0, cpu_T0);
             } else
 #endif
             {
                 gen_ldst_modrm(env, s, modrm, MO_32, OR_TMP0, 0);
-                tcg_gen_addi_ptr(cpu_ptr0, cpu_env, 
+                tcg_gen_addi_ptr(cpu_ptr0, cpu_env,
                                  offsetof(CPUX86State,xmm_regs[reg]));
                 tcg_gen_trunc_tl_i32(cpu_tmp2_i32, cpu_T0);
                 gen_helper_movl_mm_T0_xmm(cpu_ptr0, cpu_tmp2_i32);
@@ -3559,14 +3559,14 @@ static void gen_sse(CPUX86State *env, DisasContext *s, int b,
             break;
         case 0x050: /* movmskps */
             rm = (modrm & 7) | REX_B(s);
-            tcg_gen_addi_ptr(cpu_ptr0, cpu_env, 
+            tcg_gen_addi_ptr(cpu_ptr0, cpu_env,
                              offsetof(CPUX86State,xmm_regs[rm]));
             gen_helper_movmskps(cpu_tmp2_i32, cpu_env, cpu_ptr0);
             tcg_gen_extu_i32_tl(cpu_regs[reg], cpu_tmp2_i32);
             break;
         case 0x150: /* movmskpd */
             rm = (modrm & 7) | REX_B(s);
-            tcg_gen_addi_ptr(cpu_ptr0, cpu_env, 
+            tcg_gen_addi_ptr(cpu_ptr0, cpu_env,
                              offsetof(CPUX86State,xmm_regs[rm]));
             gen_helper_movmskpd(cpu_tmp2_i32, cpu_env, cpu_ptr0);
             tcg_gen_extu_i32_tl(cpu_regs[reg], cpu_tmp2_i32);
@@ -5416,7 +5416,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
                 gen_helper_cmpxchg16b_unlocked(cpu_env, cpu_A0);
             }
         } else
-#endif        
+#endif
         {
             if (!(s->cpuid_features & CPUID_CX8))
                 goto illegal_op;
@@ -6440,7 +6440,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
     case 0x6d:
         ot = mo_b_d32(b, dflag);
         tcg_gen_ext16u_tl(cpu_T0, cpu_regs[R_EDX]);
-        gen_check_io(s, ot, pc_start - s->cs_base, 
+        gen_check_io(s, ot, pc_start - s->cs_base,
                      SVM_IOIO_TYPE_MASK | svm_is_rep(prefixes) | 4);
         if (prefixes & (PREFIX_REPZ | PREFIX_REPNZ)) {
             gen_repz_ins(s, ot, pc_start - s->cs_base, s->pc - s->cs_base);
@@ -7097,7 +7097,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         //XXX: Pyrebox - opcode_range. We need to put it BEFORE the instruction, at the time
         //of insn_begin, because the gen_interrupt will provoke to exit the cpu loop,
         //so whatever we insert after that will never be executed.
-        
+
         if (is_opcode_range_callback_needed((target_ulong)s->saved_opcode,s->pgd)){
             TCGv tcg_saved_pc = tcg_temp_new();
             tcg_gen_movi_tl(tcg_saved_pc, s->saved_pc);
@@ -7120,7 +7120,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         //XXX: Pyrebox - opcode_range. We need to put it BEFORE the instruction, at the time
         //of insn_begin, because the gen_interrupt will provoke to exit the cpu loop,
         //so whatever we insert after that will never be executed.
-        
+
         if (is_opcode_range_callback_needed((target_ulong)s->saved_opcode,s->pgd)){
             TCGv tcg_saved_pc = tcg_temp_new();
             tcg_gen_movi_tl(tcg_saved_pc, s->saved_pc);
@@ -8464,9 +8464,9 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         //when these callbacks are trigger corresponds to the next
         //instruction, just like for the previous cases.
         gen_jmp_im(s->pc - s->cs_base);
-        //Pyrebox: insn end 
+        //Pyrebox: insn end
         //helper_qemu_insn_end_callback(CPUState* cpu)
-        //At this point, we take the pgd from the DisasContext, 
+        //At this point, we take the pgd from the DisasContext,
         //because we previously saved it
         if (is_insn_end_callback_needed(s->pgd)){
             TCGv_ptr tcg_cpu = tcg_const_ptr((tcg_target_ulong)s->cs);
@@ -8475,7 +8475,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         }
         //Pyrebox: opcode range
         //helper_qemu_opcode_range_callback(CPUState* cpu, target_ulong from, target_ulong to, uint16_t opcode)
-        
+
         if (is_opcode_range_callback_needed((target_ulong)s->saved_opcode,s->pgd)){
             TCGv tcg_saved_pc = tcg_temp_new();
             tcg_gen_movi_tl(tcg_saved_pc, s->saved_pc);
@@ -8609,7 +8609,7 @@ void gen_intermediate_code(CPUState *cs, TranslationBlock *tb)
     cs_base = tb->cs_base;
     flags = tb->flags;
 
-    //Pyrebox: Save the current PGD in the DisasContext, and the cpu index 
+    //Pyrebox: Save the current PGD in the DisasContext, and the cpu index
     dc->pgd = env->cr[3];
     dc->cs = cs;
 
@@ -8726,7 +8726,7 @@ void gen_intermediate_code(CPUState *cs, TranslationBlock *tb)
             gen_helper_qemu_insn_begin_callback(cpu_addr);
             tcg_temp_free_ptr(cpu_addr);
         }
-        
+
         //Pyrebox, save the pc_ptr for using it in the generation of insn_end and block_end
         dc->saved_pc = pc_ptr;
 

@@ -2,13 +2,13 @@
 
    Copyright (C) 2017 Cisco Talos Security Intelligence and Research Group
 
-   PyREBox: Python scriptable Reverse Engineering Sandbox 
-   Author: Xabier Ugarte-Pedrero 
-   
+   PyREBox: Python scriptable Reverse Engineering Sandbox
+   Author: Xabier Ugarte-Pedrero
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License version 2 as
    published by the Free Software Foundation.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -18,7 +18,7 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
    MA 02110-1301, USA.
-   
+
 -------------------------------------------------------------------------------*/
 
 #include <Python.h>
@@ -59,8 +59,8 @@ PyObject* register_callback(PyObject *dummy, PyObject *args){
     pyrebox_target_ulong second_param = (pyrebox_target_ulong) INV_PGD;
     module_handle_t module_handle;
 
-    //Parameters: module handle, callback type, callback function, optional address start, optional pgd 
-    int parse_tuple_result = 0; 
+    //Parameters: module handle, callback type, callback function, optional address start, optional pgd
+    int parse_tuple_result = 0;
 #if TARGET_LONG_SIZE == 4
     parse_tuple_result = PyArg_ParseTuple(args, "IIO|II", &module_handle, &callback_type, &py_callback,&first_param,&second_param);
 #elif TARGET_LONG_SIZE == 8
@@ -81,8 +81,8 @@ PyObject* register_callback(PyObject *dummy, PyObject *args){
         }
         //Should not reach this point if we have and invalid callback
         callback_type_t casted_callback_type = (callback_type_t) callback_type;
-       
-        callback_handle_t hdl; 
+
+        callback_handle_t hdl;
         if (casted_callback_type == OPCODE_RANGE_CB)
         {
             //First parameter(address) is the start_opcode
@@ -121,7 +121,7 @@ PyObject* register_callback(PyObject *dummy, PyObject *args){
 
 PyObject* unregister_callback(PyObject *dummy, PyObject *args){
     PyObject *result = 0;
-    callback_handle_t hdl; 
+    callback_handle_t hdl;
     if (PyArg_ParseTuple(args, "I", &hdl)){
         remove_callback_deferred(hdl);
         Py_INCREF(Py_None);
@@ -876,7 +876,7 @@ PyObject* py_get_os_bits(PyObject *dummy, PyObject *args){
 }
 
 PyMethodDef api_methods[] = {
-      {"register_callback", register_callback, METH_VARARGS, "register_callback"}, 
+      {"register_callback", register_callback, METH_VARARGS, "register_callback"},
       {"unregister_callback", unregister_callback, METH_VARARGS, "unregister_callback"},
       {"r_pa",r_pa, METH_VARARGS, "r_pa"},
       {"r_va",r_va, METH_VARARGS, "r_va"},

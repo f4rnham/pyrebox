@@ -2,13 +2,13 @@
 
    Copyright (C) 2017 Cisco Talos Security Intelligence and Research Group
 
-   PyREBox: Python scriptable Reverse Engineering Sandbox 
-   Author: Xabier Ugarte-Pedrero 
-   
+   PyREBox: Python scriptable Reverse Engineering Sandbox
+   Author: Xabier Ugarte-Pedrero
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License version 2 as
    published by the Free Software Foundation.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -18,7 +18,7 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
    MA 02110-1301, USA.
-   
+
 -------------------------------------------------------------------------------*/
 
 #include <Python.h>
@@ -49,7 +49,7 @@ callback_handle_t callback_handle_counter = 1;
 internal_callbacks_t internal_callbacks[MAX_INTERNAL_CALLBACKS];
 internal_callback_handle_t current_internal_callback_handle = 0;
 
-//CallbackManager class initialization 
+//CallbackManager class initialization
 
 //Reference to callback manager
 CallbackManager* cb_manager = 0;
@@ -77,7 +77,7 @@ void FinalizeCallbacks(){
 
 void remove_callback(callback_handle_t handle){
     if (cb_manager != 0) {
-        cb_manager->remove_callback(handle); 
+        cb_manager->remove_callback(handle);
     }
     return;
 }
@@ -95,13 +95,13 @@ void remove_trigger(callback_handle_t callback_handle){
 }
 void set_trigger_var(callback_handle_t callback_handle,const char* var,void* val){
     if (cb_manager != 0) {
-        cb_manager->set_trigger_var(callback_handle,var,val); 
+        cb_manager->set_trigger_var(callback_handle,var,val);
     }
     return;
 }
 void* get_trigger_var(callback_handle_t callback_handle,const char* var){
     if (cb_manager != 0) {
-        return cb_manager->get_trigger_var(callback_handle,var); 
+        return cb_manager->get_trigger_var(callback_handle,var);
     }
     return 0;
 }
@@ -121,7 +121,7 @@ void commit_deferred_callback_removes(){
 
 callback_handle_t add_callback_at(callback_type_t type, module_handle_t module_handle, PyObject* callback_function, pyrebox_target_ulong address, pyrebox_target_ulong pgd){
     if (cb_manager != 0) {
-        return cb_manager->add_callback(type,module_handle,callback_function,address,pgd); 
+        return cb_manager->add_callback(type,module_handle,callback_function,address,pgd);
     }
     else{
         return 0;
@@ -240,7 +240,7 @@ void tlb_exec_callback(callback_params_t params)
    pyrebox_target_ulong cr3 = get_pgd(cpu_opaque);
    //VMI related actions
    vmi_tlb_callback(cr3, params.tlb_exec_params.vaddr);
-   
+
    //Deliver the python callbacks
    if (cb_manager != 0)
    {
@@ -286,7 +286,7 @@ int is_callback_needed(callback_type_t callback_type, pyrebox_target_ulong addre
     return (cb_manager->is_callback_needed(callback_type,address,pgd));
 }
 
-}; // extern "C" 
+}; // extern "C"
 
 
 callback_handle_t CallbackManager::add_callback(callback_type_t type, module_handle_t module_handle, PyObject* callback_function, pyrebox_target_ulong address){
@@ -484,7 +484,7 @@ void CallbackManager::remove_trigger(callback_handle_t callback_handle){
 }
 
 callback_handle_t CallbackManager::add_callback(callback_type_t type, module_handle_t module_handle, PyObject* callback_function, pyrebox_target_ulong address, pyrebox_target_ulong pgd) {
-    //First, check if the python function is correct 
+    //First, check if the python function is correct
     if (!PyCallable_Check(callback_function)){
         return 0;
     }
@@ -493,7 +493,7 @@ callback_handle_t CallbackManager::add_callback(callback_type_t type, module_han
     switch(type)
     {
         case OP_BLOCK_BEGIN_CB:
-            //Unless we are isntrumenting all block begins for that process, flush TB 
+            //Unless we are isntrumenting all block begins for that process, flush TB
             if (!(callbacks[BLOCK_BEGIN_CB].size() > 0 && is_monitored_process(pgd))){
                 pyrebox_flush_tb();
             }
@@ -504,11 +504,11 @@ callback_handle_t CallbackManager::add_callback(callback_type_t type, module_han
             ((OptimizedBlockBeginCallback*)cb)->set_target_address(addr_block);
             break;
         case OP_INSN_BEGIN_CB:
-            //Unless we are isntrumenting all insn begins for that process, flush TB 
+            //Unless we are isntrumenting all insn begins for that process, flush TB
             if (!(callbacks[INSN_BEGIN_CB].size() > 0 && is_monitored_process(pgd))){
                 pyrebox_flush_tb();
             }
-            cb = (Callback*) new OptimizedInsBeginCallback(); 
+            cb = (Callback*) new OptimizedInsBeginCallback();
             memory_address_t addr;
             addr.address = address;
             addr.pgd = pgd;
@@ -562,7 +562,7 @@ void CallbackManager::deliver_callback(callback_type_t type, callback_params_t p
         memory_address_t addr;
         addr.address = get_cpu_addr(params.insn_begin_params.cpu);
         addr.pgd = get_pgd(params.insn_begin_params.cpu);
-        //Deliver inmediately the internal callbacks 
+        //Deliver inmediately the internal callbacks
         for (int i = 0; i < MAX_INTERNAL_CALLBACKS && internal_callbacks[i].callback_function != 0; ++i){
             if (internal_callbacks[i].pc == addr.address && (internal_callbacks[i].pgd == 0 || internal_callbacks[i].pgd == addr.pgd)){
                 internal_callbacks[i].callback_function(params);
@@ -574,7 +574,7 @@ void CallbackManager::deliver_callback(callback_type_t type, callback_params_t p
     fflush(stdout);
     fflush(stderr);
 
-    //For each type of callback, trigger the python callback with its corresponding arguments 
+    //For each type of callback, trigger the python callback with its corresponding arguments
     PyObject* arg = 0;
     list<Callback*> callbacks_needed;
 
@@ -689,7 +689,7 @@ void CallbackManager::deliver_callback(callback_type_t type, callback_params_t p
         fflush(stdout);
         fflush(stderr);
         pthread_mutex_unlock(&pyrebox_mutex);
-        return; 
+        return;
     }
 
 
@@ -998,7 +998,7 @@ int CallbackManager::is_callback_needed(callback_type_t callback_type, pyrebox_t
         //Unified block begin callback. Only BLOCK_BEGIN_CB should be queried, anyway
         case OP_BLOCK_BEGIN_CB:
         case BLOCK_BEGIN_CB:
-            //First, check if we have callbacks for the generic version 
+            //First, check if we have callbacks for the generic version
             if (this->callbacks[BLOCK_BEGIN_CB].size() > 0){
                 return 1;
             }
@@ -1024,7 +1024,7 @@ int CallbackManager::is_callback_needed(callback_type_t callback_type, pyrebox_t
                     return 1;
                 }
             }
-            //First, check if we have callbacks for the generic version 
+            //First, check if we have callbacks for the generic version
             if (this->callbacks[INSN_BEGIN_CB].size() > 0){
                 return 1;
             }
@@ -1071,7 +1071,7 @@ int CallbackManager::is_callback_needed(callback_type_t callback_type, pyrebox_t
         case CREATEPROC_CB:
         case REMOVEPROC_CB:
         case CONTEXTCHANGE_CB:
-            //We always deliver TLB callbacks, because we need them to 
+            //We always deliver TLB callbacks, because we need them to
             //trigger certain VMI related actions
             return 1;
             break;

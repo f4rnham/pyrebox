@@ -2,13 +2,13 @@
 
    Copyright (C) 2017 Cisco Talos Security Intelligence and Research Group
 
-   PyREBox: Python scriptable Reverse Engineering Sandbox 
-   Author: Xabier Ugarte-Pedrero 
-   
+   PyREBox: Python scriptable Reverse Engineering Sandbox
+   Author: Xabier Ugarte-Pedrero
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License version 2 as
    published by the Free Software Foundation.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -18,7 +18,7 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
    MA 02110-1301, USA.
-   
+
 -------------------------------------------------------------------------------*/
 
 #ifndef QEMU_GLUE_H
@@ -28,7 +28,7 @@
 
 #if defined(TARGET_X86_64)
 #define TARGET_LONG_BITS 64
-#define PYREBOX_CPU_NB_REGS 16 
+#define PYREBOX_CPU_NB_REGS 16
 #define PYTHON_TARGET_ULONG Q
 #elif defined(TARGET_I386) && !defined(TARGET_X86_64)
 #define TARGET_LONG_BITS 32
@@ -85,11 +85,11 @@ typedef enum {
     RN_EIP,
     RN_EFLAGS,
     RN_ES,
-    RN_CS, 
-    RN_SS,    
-    RN_DS,    
-    RN_FS,    
-    RN_GS,    
+    RN_CS,
+    RN_SS,
+    RN_DS,
+    RN_FS,
+    RN_GS,
     RN_LDT,
     RN_TR,
     RN_GDT,
@@ -115,11 +115,11 @@ typedef enum {
     RN_RIP,
     RN_RFLAGS,
     RN_ES,
-    RN_CS, 
-    RN_SS,    
-    RN_DS,    
-    RN_FS,    
-    RN_GS,    
+    RN_CS,
+    RN_SS,
+    RN_DS,
+    RN_FS,
+    RN_GS,
     RN_LDT,
     RN_TR,
     RN_GDT,
@@ -157,7 +157,7 @@ typedef void* qemu_tb_opaque_t;
 
 /**************************************************** PYTHON FUNCTIONS ************************************************/
 
-//These methods convert some complex QEMU types to python tuples that can be easily used in 
+//These methods convert some complex QEMU types to python tuples that can be easily used in
 //python callback functions. This NEW objects must be decrefed once we return back from the
 //python funtion called with Py_Callobject so that the GC can delete them from memory.
 PyObject* get_cpu_state(qemu_cpu_opaque_t cpu_opaque);

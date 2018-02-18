@@ -2,13 +2,13 @@
 
    Copyright (C) 2017 Cisco Talos Security Intelligence and Research Group
 
-   PyREBox: Python scriptable Reverse Engineering Sandbox 
-   Author: Xabier Ugarte-Pedrero 
-   
+   PyREBox: Python scriptable Reverse Engineering Sandbox
+   Author: Xabier Ugarte-Pedrero
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License version 2 as
    published by the Free Software Foundation.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -18,7 +18,7 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
    MA 02110-1301, USA.
-   
+
 -------------------------------------------------------------------------------*/
 
 #include  <Python.h>
@@ -43,12 +43,12 @@
 #include "qemu_glue_callbacks.h"
 #include "callbacks.h"
 
-//This file should define the functions called by qemu hooks, 
-//and redirect the calls to the corresponding callbacks 
+//This file should define the functions called by qemu hooks,
+//and redirect the calls to the corresponding callbacks
 //in callbacks.cpp
 
-//callbacks is c++ code, making difficult to compile QEMU 
-//if we include it in qemu headers, so we need 
+//callbacks is c++ code, making difficult to compile QEMU
+//if we include it in qemu headers, so we need
 //this proxy to compile it easily
 
 target_ulong last_pgd = 0;
@@ -62,7 +62,7 @@ void qemu_tlb_exec_callback(CPUState* cpu, target_ulong vaddr){
     params.tlb_exec_params.cpu = (qemu_cpu_opaque_t) cpu;
     params.tlb_exec_params.vaddr = (pyrebox_target_ulong) vaddr;
     //Call pyrebox callback
-    tlb_exec_callback(params); 
+    tlb_exec_callback(params);
     if (is_cpu_loop_exit_needed()) {
         cpu->exception_index = EXCP_INTERRUPT;
         cpu_loop_exit(cpu);
@@ -174,7 +174,7 @@ void helper_qemu_opcode_range_callback(CPUState* cpu, target_ulong from, target_
 #elif defined(TARGET_ARM) && !defined(TARGET_AARCH64)
 #error "Architecture not supported yet"
 #endif
-    params.opcode_range_params.cpu = (qemu_cpu_opaque_t) cpu; 
+    params.opcode_range_params.cpu = (qemu_cpu_opaque_t) cpu;
     params.opcode_range_params.cur_pc = from;
     params.opcode_range_params.next_pc = to;
     params.opcode_range_params.opcode = opcode;
@@ -310,11 +310,11 @@ int is_tb_flush_needed(void){
         flush_needed = 0;
         return 1;
     }
-    return 0; 
+    return 0;
 }
 
 void pyrebox_flush_tb(void){
-    flush_needed = 1;    
+    flush_needed = 1;
 }
 
 int is_cpu_loop_exit_needed(void){
