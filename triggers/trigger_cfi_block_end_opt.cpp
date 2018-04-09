@@ -41,6 +41,11 @@ extern "C" {
         kernel_iret_addr = val;
     }
 
+    void reset() {
+        bb_start_offsets.clear();
+        memset(stats, 0, sizeof(stats));
+    }
+
     callback_type_t get_type() {
         return BLOCK_END_CB;
     }
@@ -83,8 +88,6 @@ extern "C" {
 
     void clean(callback_handle_t handle)
     {
-        bb_start_offsets.clear();
-        memset(stats, 0, sizeof(stats));
         erase_trigger_vars(handle);
     }
 }
