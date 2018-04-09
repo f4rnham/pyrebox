@@ -60,20 +60,21 @@ extern "C" {
 
         pyrebox_target_ulong eip;
         read_register_convert(params.block_end_params.cpu, RN_EIP, &eip);
-        if (bb_start_offsets.find(eip) != bb_start_offsets.end()) {
-            ++stats[3];
+
+        // rep* instruction
+        if (params.block_end_params.cur_pc == eip) {
+            ++stats[2];
             return 0;
         }
 
         // Ignore one specific iret control flow transfer, it can return anywhere
         if (params.block_end_params.cur_pc == kernel_iret_addr) {
-            ++stats[4];
+            ++stats[3];
             return 0;
         }
 
-        // rep* instruction
-        if (params.block_end_params.cur_pc == eip) {
-            ++stats[2];
+        if (bb_start_offsets.find(eip) != bb_start_offsets.end()) {
+            ++stats[4];
             return 0;
         }
 
