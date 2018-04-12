@@ -64,6 +64,7 @@ from utils import pp_print
 from utils import pp_debug
 from utils import pp_warning
 from utils import pp_error
+from api_internal import commit_deferred_callback_removes
 
 # Third party utils
 
@@ -1753,6 +1754,7 @@ def run_custom_command(cmd, args):
     global __added_commands
     if cmd in __added_commands:
         __added_commands[cmd](args)
+        commit_deferred_callback_removes()
     else:
         pp_error(
             "The custom command %s is not a valid or defined command" %
