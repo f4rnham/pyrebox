@@ -881,6 +881,31 @@ PyObject* py_get_os_bits(PyObject *dummy, PyObject *args){
     return result;
 }
 
+void qmp_dump_guest_memory(bool, const char*, bool, bool, bool, int64_t, bool, int64_t, bool, int, void*);
+
+PyObject* dump_guest_memory(PyObject *dummy, PyObject *args){
+    Py_ssize_t args_size = PyTuple_Size(args);
+    char* str;
+    int str_size;
+    if (args_size == 1){
+        if (PyArg_ParseTuple(args, "s#", &str, &str_size)){
+            char const *file_fmt = "file:%s";
+            int buffer_size = sizeof(file_fmt) + str_size * sizeof(char);
+
+            char *buffer = (char*)malloc(buffer_size);
+            snprintf(buffer, buffer_size, file_fmt, str);
+
+            void *err = NULL;
+            qmp_dump_guest_memory(false, buffer, false, false, false, 0, false, 0, false, 0, &err);
+            Py_INCREF(Py_None);
+            return Py_None;
+        }
+    }
+
+    PyErr_SetString(PyExc_ValueError, "This internal function only accepts one string argument");
+    return 0;
+}
+
 PyObject* py_import_module(PyObject *dummy, PyObject *args){
     char* name;
     int length;
@@ -1020,6 +1045,7 @@ PyMethodDef api_methods[] = {
       {"get_num_cpus",py_get_num_cpus, METH_VARARGS, "get_num_cpus"},
       {"plugin_print_internal",py_print_plugin, METH_VARARGS, "plugin_print_internal"},
       {"get_os_bits",py_get_os_bits,METH_VARARGS,"get_os_bits"},
+      {"dump_guest_memory",dump_guest_memory,METH_VARARGS,"dump_guest_memory"},
       {"import_module",py_import_module,METH_VARARGS,"import_module"},
       {"unload_module",py_unload_module,METH_VARARGS,"unload_module"},
       {"reload_module",py_reload_module,METH_VARARGS,"reload_module"},

@@ -505,6 +505,30 @@ def get_os_bits():
     # upwards
     return c_api.get_os_bits()
 
+def dump_guest_memory(filename):
+    """ Dump guest memory into file 'filename'
+
+        :param filename: Dump file name
+        :type name: str
+
+        :return: None
+        :rtype: None
+    """
+
+    # Deadlock is possible when used from interactive shell, its safe from callbacks though
+    # Not the best solution and the following would fail hilariously
+    #   if 'IPython/core/interactiveshell.py' in ''.join(traceback.format_stack()):
+    import traceback
+    trace = ''.join(traceback.format_stack())
+    if 'IPython/core/interactiveshell.py' in trace:
+        raise NotImplementedError('api.dump_guest_memory can\'t be used from interactive shell')
+
+    import c_api
+    # If this function call fails, it will raise an exception.
+    # Given that the exception is self explanatory, we just let it propagate
+    # upwards
+    return c_api.dump_guest_memory(filename)
+
 # Rest of API functions
 
 
