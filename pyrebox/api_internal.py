@@ -392,6 +392,15 @@ def unregister_callback(callback_handle):
 
     return c_api.unregister_callback(callback_handle)
 
+def commit_deferred_callback_removes():
+    """ Remove the installed callbacks whose removal was deferred until all callbacks have been dispatched
+
+    :return: None
+    :rtype: None
+    """
+    import c_api
+
+    return c_api.commit_deferred_callback_removes()
 
 def add_trigger(handle, path):
     """ Add (attach) a trigger to a given callback.

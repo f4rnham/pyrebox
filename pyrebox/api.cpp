@@ -130,6 +130,12 @@ PyObject* unregister_callback(PyObject *dummy, PyObject *args){
     return result;
 }
 
+PyObject* py_commit_deferred_callback_removes(PyObject *dummy, PyObject *args){
+    commit_deferred_callback_removes();
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 //Read physical memory
 PyObject* r_pa(PyObject *dummy, PyObject *args){
     PyObject *result = 0;
@@ -983,6 +989,7 @@ PyObject* py_get_loaded_modules(PyObject *dummy, PyObject *args){
 PyMethodDef api_methods[] = {
       {"register_callback", register_callback, METH_VARARGS, "register_callback"}, 
       {"unregister_callback", unregister_callback, METH_VARARGS, "unregister_callback"},
+      {"commit_deferred_callback_removes", py_commit_deferred_callback_removes, METH_NOARGS, "commit_deferred_callback_removes"},
       {"r_pa",r_pa, METH_VARARGS, "r_pa"},
       {"r_va",r_va, METH_VARARGS, "r_va"},
       {"r_cpu",r_cpu, METH_VARARGS, "r_cpu"},
