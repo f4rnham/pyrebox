@@ -119,6 +119,8 @@ typedef struct DisasContext {
     uint32_t saved_opcode;
     //Pyrebox: the cpu
     CPUState* cs;
+    //CFI: Call block end callback - optimization
+    int call_block_end;
 
     //---------------------------END PYREBOX ADDED------------------------------
 
@@ -2184,7 +2186,7 @@ static inline void gen_goto_tb(DisasContext *s, int tb_num, target_ulong eip)
         }
         //Pyrebox: block_end
         //helper_qemu_block_end_callback(CPUState* cpu,TranslationBlock* next_tb, target_ulong from,target_ulong to)
-        if (is_block_end_callback_needed(s->pgd)){
+        if (s->call_block_end && is_block_end_callback_needed(s->pgd)){
             TCGv_ptr tcg_tb = tcg_const_ptr((tcg_target_ulong)s->tb);
             TCGv tcg_from = tcg_temp_new();
             tcg_gen_movi_tl(tcg_from, s->saved_pc);
@@ -2620,7 +2622,7 @@ do_gen_eob_worker(DisasContext *s, bool inhibit, bool recheck_tf, TCGv jr)
 
         //Pyrebox: block_end
         //helper_qemu_block_end_callback(CPUState* cpu,TranslationBlock* next_tb, target_ulong from)
-        if (is_block_end_callback_needed(s->pgd)){
+        if (s->call_block_end && is_block_end_callback_needed(s->pgd)){
             TCGv_ptr tcg_tb = tcg_const_ptr((tcg_target_ulong)s->tb);
             TCGv tcg_from = tcg_temp_new();
             tcg_gen_movi_tl(tcg_from, s->saved_pc);
@@ -2646,7 +2648,7 @@ do_gen_eob_worker(DisasContext *s, bool inhibit, bool recheck_tf, TCGv jr)
         }
         //Pyrebox: block_end
         //helper_qemu_block_end_callback(CPUState* cpu,TranslationBlock* next_tb, target_ulong from)
-        if (is_block_end_callback_needed(s->pgd)){
+        if (s->call_block_end && is_block_end_callback_needed(s->pgd)){
             TCGv_ptr tcg_tb = tcg_const_ptr((tcg_target_ulong)s->tb);
             TCGv tcg_from = tcg_temp_new();
             tcg_gen_movi_tl(tcg_from, s->saved_pc);
@@ -5582,6 +5584,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         gen_movl_seg_T0(s, reg);
         /* Note that reg == R_SS in gen_movl_seg_T0 always sets is_jmp.  */
         if (s->is_jmp) {
+            s->call_block_end = 0;
             gen_jmp_im(s->pc - s->cs_base);
             if (reg == R_SS) {
                 s->tf = 0;
@@ -6631,6 +6634,8 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             } else if (!CODE64(s)) {
                 tval &= 0xffffffff;
             }
+
+            s->call_block_end = 0;
             tcg_gen_movi_tl(cpu_T0, next_eip);
             gen_push_v(s, cpu_T0);
             gen_bnd_jmp(s);
@@ -6647,6 +6652,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             offset = insn_get(env, s, ot);
             selector = insn_get(env, s, MO_16);
 
+            s->call_block_end = 0;
             tcg_gen_movi_tl(cpu_T0, selector);
             tcg_gen_movi_tl(cpu_T1, offset);
         }
@@ -6663,6 +6669,8 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         } else if (!CODE64(s)) {
             tval &= 0xffffffff;
         }
+
+        s->call_block_end = 0;
         gen_bnd_jmp(s);
         gen_jmp(s, tval);
         break;
@@ -6678,6 +6686,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
 
             tcg_gen_movi_tl(cpu_T0, selector);
             tcg_gen_movi_tl(cpu_T1, offset);
+            s->call_block_end = 0;
         }
         goto do_ljmp;
     case 0xeb: /* jmp Jb */
@@ -6686,6 +6695,8 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         if (dflag == MO_16) {
             tval &= 0xffff;
         }
+
+        s->call_block_end = 0;
         gen_jmp(s, tval);
         break;
     case 0x70 ... 0x7f: /* jcc Jb */
@@ -6703,6 +6714,8 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         if (dflag == MO_16) {
             tval &= 0xffff;
         }
+
+        s->call_block_end = 0;
         gen_bnd_jmp(s);
         gen_jcc(s, b, tval, next_eip);
         break;
@@ -6788,6 +6801,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             gen_pop_update(s, ot);
             set_cc_op(s, CC_OP_EFLAGS);
             /* abort translation because TF/AC flag may change */
+            s->call_block_end = 0;
             gen_jmp_im(s->pc - s->cs_base);
             gen_eob(s);
         }
@@ -7178,6 +7192,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
         break;
     case 0xfb: /* sti */
         if (s->vm86 ? s->iopl == 3 : s->cpl <= s->iopl) {
+            s->call_block_end = 0;
             gen_helper_sti(cpu_env);
             /* interruptions are enabled only the first insn after sti */
             gen_jmp_im(s->pc - s->cs_base);
@@ -7717,6 +7732,7 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
                 gen_exception(s, EXCP0D_GPF, pc_start - s->cs_base);
                 break;
             }
+            s->call_block_end = 0;
             gen_update_cc_op(s);
             gen_jmp_im(pc_start - s->cs_base);
             gen_lea_modrm(env, s, modrm);
@@ -8114,6 +8130,10 @@ static target_ulong disas_insn(CPUX86State *env, DisasContext *s,
             case 3:
             case 4:
             case 8:
+                if (s->saved_opcode == 0x122) {
+                    s->call_block_end = 0;
+                }
+
                 gen_update_cc_op(s);
                 gen_jmp_im(pc_start - s->cs_base);
                 if (b & 2) {
@@ -8729,6 +8749,7 @@ void gen_intermediate_code(CPUState *cs, TranslationBlock *tb)
         
         //Pyrebox, save the pc_ptr for using it in the generation of insn_end and block_end
         dc->saved_pc = pc_ptr;
+        dc->call_block_end = 1;
 
         pc_ptr = disas_insn(env, dc, pc_ptr);
         /* stop translation if indicated */
@@ -8741,6 +8762,7 @@ void gen_intermediate_code(CPUState *cs, TranslationBlock *tb)
            change to be happen */
         if (dc->tf || dc->singlestep_enabled ||
             (flags & HF_INHIBIT_IRQ_MASK)) {
+            dc->call_block_end = 0;
             gen_jmp_im(pc_ptr - dc->cs_base);
             gen_eob(dc);
             break;
@@ -8764,6 +8786,7 @@ void gen_intermediate_code(CPUState *cs, TranslationBlock *tb)
             (pc_ptr - pc_start) >= (TARGET_PAGE_SIZE - 32) ||
             num_insns >= max_insns) {
             gen_jmp_im(pc_ptr - dc->cs_base);
+            dc->call_block_end = 0;
             gen_eob(dc);
             break;
         }
