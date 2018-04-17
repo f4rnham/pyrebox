@@ -23,6 +23,8 @@
 
 import os.path
 import os
+import subprocess
+import shutil
 from prettytable import PrettyTable
 
 import sys
@@ -110,9 +112,17 @@ class Module:
         else:
             pp_warning("[*]  Module %d is not loaded!\n" % self.__id)
 
+def sync_modules():
+    for file in os.listdir('/mnt/hgfs/scripts'):
+        if file.endswith('.py') or file.endswith('.fnc'):
+            shutil.copy(os.path.join('/mnt/hgfs/scripts', file), 'scripts')
+
 
 def import_module(module_name):
     global MODULE_COUNTER
+
+    sync_modules()
+
     try:
         already_imported = False
         for mod in modules:
@@ -132,6 +142,8 @@ def import_module(module_name):
 
 
 def reload_module(_id):
+    sync_modules()
+
     try:
         if _id in modules:
             modules[_id].reload()
